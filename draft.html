@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Драфт игроков</title>
+<style>
+:root{--bg:#eef2f6;--card:#fff;--ink:#14213d;--mute:#5b6678;--line:#d5dce6;--acc:#e4572e;--acc2:#2563eb;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e1626;--card:#16213a;--ink:#eaf0fa;--mute:#93a1ba;--line:#2a3857;--acc:#ff7a4d;--acc2:#6ea0ff}}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 "Segoe UI",system-ui,-apple-system,Roboto,sans-serif}
+main{max-width:980px;margin:0 auto;padding:20px 16px 48px}
+h1{font-size:clamp(28px,6vw,44px);margin:0 0 4px;letter-spacing:-.02em}
+p.lead{margin:0 0 20px;color:var(--mute)}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:16px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:640px){.grid2{grid-template-columns:1fr}}
+label{display:block;font-weight:600;margin-bottom:6px}
+textarea{width:100%;min-height:150px;padding:10px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);font:inherit;resize:vertical}
+button{font:inherit;cursor:pointer;border:1px solid var(--line);background:var(--card);color:var(--ink);padding:9px 14px;border-radius:10px}
+button:hover{border-color:var(--acc2)}
+button:focus-visible,textarea:focus-visible{outline:3px solid var(--acc2);outline-offset:2px}
+button.primary{background:var(--acc);border-color:var(--acc);color:#fff;font-weight:700}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.order{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:8px}
+.chip{padding:4px 10px;border-radius:999px;background:var(--bg);border:1px solid var(--line);font-weight:600}
+.sep{color:var(--mute);padding:0 4px}
+.turn{font-size:clamp(20px,4.5vw,28px);font-weight:800}
+.turn b{color:var(--acc)}
+.pool{display:flex;flex-wrap:wrap;gap:8px}
+.pool button{padding:10px 14px}
+.pool button:not(:disabled):hover{background:var(--acc2);border-color:var(--acc2);color:#fff}
+.pool button:disabled,.row button:disabled{opacity:.5;cursor:not-allowed}
+select{font:inherit;padding:8px 10px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink)}
+.teams{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
+.team{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px;min-height:120px}
+.team.on{border-color:var(--acc);box-shadow:0 0 0 3px color-mix(in srgb,var(--acc) 25%,transparent)}
+.team h3{margin:0 0 8px;font-size:17px}
+.team ol{margin:0;padding-left:22px}
+.team li{padding:2px 0}
+.br{display:flex;gap:18px;align-items:stretch;min-width:min-content}
+.rd{display:flex;flex-direction:column;justify-content:space-around;gap:12px;min-width:170px}
+.rt{font-weight:700;color:var(--mute);font-size:14px}
+.mt{border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--bg)}
+.tm{display:block;width:100%;text-align:left;padding:8px 10px;border:0;border-radius:0;background:transparent;color:var(--ink);font:inherit}
+.tm+.tm{border-top:1px solid var(--line)}
+button.tm:not(:disabled):hover{background:color-mix(in srgb,var(--acc2) 18%,transparent)}
+button.tm:disabled{color:var(--ink);cursor:default}
+.tm.win{background:color-mix(in srgb,var(--acc) 22%,transparent);font-weight:700}
+.tm.lose,button.tm.lose:disabled{color:var(--mute);text-decoration:line-through}
+.tm.empty{color:var(--mute);font-style:italic}
+.champ{margin-top:14px;font-size:22px;font-weight:800}
+.ed{width:100%;margin-bottom:6px;padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);font:inherit}
+.erow{display:flex;gap:6px;margin-bottom:6px}.erow .ed{margin-bottom:0;flex:1;min-width:0}
+.tl{flex:0 0 100%;font-weight:700;color:var(--mute);margin-top:4px}
+.pg{flex:0 0 100%;display:flex;flex-wrap:wrap;gap:8px}
+.hide{display:none}
+.done{color:var(--acc2)}
+</style>
+</head>
+<body>
+<main>
+<h1>Драфт игроков</h1>
+<p class="lead">Порядок выбора определяется случайно и идёт «змейкой»: 1, 2, 3, 4, потом 4, 3, 2, 1.</p>
+
+<section class="panel" id="setup">
+  <div class="grid2">
+    <div><label for="tIn">Команды или капитаны (по одному в строке)</label>
+    <textarea id="tIn">Алексей
+Мария
+Иван
+Ольга</textarea></div>
+    <div><label for="pIn">Игроки (по одному в строке)</label>
+    <textarea id="pIn">Игрок 1
+Игрок 2
+Игрок 3
+Игрок 4
+Игрок 5
+Игрок 6
+Игрок 7
+Игрок 8
+Игрок 9
+Игрок 10
+Игрок 11
+Игрок 12</textarea></div>
+  </div>
+  <div style="margin-top:14px"><label>Тиры: сколько игроков в каждом (считаются по списку сверху вниз: сначала A, потом B, C)</label>
+    <div class="row"><b>A</b><input type="number" min="0" id="tA" class="ed" style="width:72px;margin:0" placeholder="0"><b>B</b><input type="number" min="0" id="tB" class="ed" style="width:72px;margin:0" placeholder="0"><b>C</b><input type="number" min="0" id="tC" class="ed" style="width:72px;margin:0" placeholder="0"></div>
+    <div style="color:var(--mute);font-size:14px;margin-top:8px">Выбирать можно строго по порядку: сначала все A, потом B, потом C.</div>
+    <div style="color:var(--mute);font-size:14px">Если оставить пусто, тиров нет. Игроки без тира идут после C.</div></div>
+  <div class="row" style="margin-top:12px"><button class="primary" id="start">Бросить жребий и начать</button></div>
+  <p id="err" style="color:var(--acc);margin:8px 0 0"></p>
+</section>
+
+<section id="game" class="hide">
+  <div class="panel">
+    <div class="turn" id="turn"></div>
+    <div class="order" id="order"></div>
+    <div class="row" style="margin-top:12px"><label for="role" style="margin:0">Вы:</label><select id="role"></select><span id="sync" style="color:var(--mute)">не подключено к онлайн-драфту: войдите в свой аккаунт Claude и попросите организатора пригласить вас</span></div>
+    <div class="row" style="margin-top:12px">
+      <button id="rnd">Случайный игрок</button>
+      <button id="undo">Отменить выбор</button>
+      <button id="reshuffle">Перебросить жребий</button>
+      <button id="reset">Начать заново</button>
+      <button id="share">Скопировать ссылку для просмотра</button>
+      <button id="edit">Изменить имена</button>
+    </div>
+  </div>
+  <div class="panel hide" id="editor"><div class="grid2"><div><label>Капитаны / команды</label><div id="etl"></div></div><div><label>Игроки</label><div id="epl"></div></div></div><p id="eerr" style="color:var(--acc);margin:8px 0 0"></p><div class="row" style="margin-top:12px"><button class="primary" id="esave">Сохранить имена</button><button id="ecancel">Отмена</button></div></div>
+  <div class="panel"><label>Доступные игроки</label><div class="pool" id="pool"></div></div>
+  <div class="teams" id="teams"></div>
+  <section class="panel hide" id="bracket" style="margin-top:16px"><div class="row" style="justify-content:space-between"><label style="margin:0">Турнирная сетка</label><button id="rebr">Перемешать сетку</button></div><div id="brwrap" style="overflow-x:auto;margin-top:10px"></div></section>
+</section>
+</main>
+
+<script>
+(function(){
+  var KEY='snake-draft-v1', RK='snake-role-v1', S=null, DB=null, ROLE='view';
+  try{ROLE=localStorage.getItem(RK)||'view'}catch(e){}
+  function can(){if(!S||!left().length)return false;return ROLE==='org'||String(teamAt(S.picks.length))===ROLE}
+  var $=function(id){return document.getElementById(id)};
+  function lines(v){return v.split('\n').map(function(s){return s.trim()}).filter(Boolean)}
+  function shuffle(a){a=a.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t}return a}
+  function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}if(DB){DB.set({json:S?JSON.stringify(S):''}).catch(function(){})}}
+  function load(){try{var r=localStorage.getItem(KEY);return r?JSON.parse(r):null}catch(e){return null}}
+  function teamAt(k){var n=S.teams.length,r=Math.floor(k/n),p=k%n;return S.order[r%2===0?p:n-1-p]}
+  function left(){return S.players.filter(function(p){return !S.picks.some(function(x){return x.p===p})})}
+  function pick(p){
+    if(!can()||!allowed(p))return;
+    function go(){S.picks.push({p:p,t:teamAt(S.picks.length)});if(!left().length)S.bracket=mkBracket();save();render()}
+    if(!DB){go();return}
+    DB.get().then(function(s){
+      var d=s.exists&&s.data().json?JSON.parse(s.data().json):null;
+      if(d&&d.picks.length!==S.picks.length){S=d;render();return}
+      go();
+    }).catch(function(){go()});
+  }
+  function render(){
+    $('setup').classList.toggle('hide',!!S);
+    $('game').classList.toggle('hide',!S);
+    if(!S)return;
+    var n=S.teams.length,k=S.picks.length,rest=left();
+    var cur=rest.length?teamAt(k):null;
+    $('turn').innerHTML=rest.length?('Выбирает: <b>'+esc(S.teams[cur])+'</b> <span style="color:var(--mute);font-weight:500;font-size:.6em">выбор №'+(k+1)+'</span>'):'<span class="done">Все игроки распределены</span>';
+    var o=S.order.map(function(t,i){return '<span class="chip">'+(i+1)+'. '+esc(S.teams[t])+'</span>'});
+    var rev=S.order.slice().reverse().map(function(t){return '<span class="chip">'+esc(S.teams[t])+'</span>'});
+    $('order').innerHTML='<span>Раунд 1:</span>'+o.join('<span class="sep">›</span>')+'<span style="width:100%"></span><span>Раунд 2:</span>'+rev.join('<span class="sep">›</span>');
+    var ok=can();
+    var hasT=S.tiers&&S.tiers.some(function(x){return x});
+    $('pool').innerHTML=rest.length?TO.map(function(tl){
+      var b=rest.map(function(p,i){return tierOf(p)===tl?'<button data-i="'+i+'"'+(ok&&allowed(p)?'':' disabled')+'>'+esc(p)+'</button>':''}).join('');
+      if(!b)return '';
+      return (hasT?'<div class="tl">'+(tl?'Tier '+tl:'Без тира')+'</div>':'')+'<div class="pg">'+b+'</div>';
+    }).join(''):'<span style="color:var(--mute)">Список пуст</span>';
+    var rs='<option value="org">Организатор (за всех)</option>'+S.teams.map(function(t,i){return '<option value="'+i+'">Я — '+esc(t)+'</option>'}).join('')+'<option value="view">Только смотрю</option>';
+    if($('role').dataset.k!==rs){$('role').innerHTML=rs;$('role').dataset.k=rs}
+    $('role').value=ROLE;
+    $('teams').innerHTML=S.order.map(function(t){
+      var mine=S.picks.filter(function(x){return x.t===t});
+      return '<div class="team'+(t===cur?' on':'')+'"><h3>'+esc(S.teams[t])+'</h3><ol>'+mine.map(function(x){return '<li>'+esc(x.p)+(tierOf(x.p)?' <small style="color:var(--mute)">'+tierOf(x.p)+'</small>':'')+'</li>'}).join('')+'</ol></div>';
+    }).join('');
+    var org=ROLE==='org';
+    $('undo').disabled=!k||!org;$('reshuffle').disabled=!!k||!org;$('reset').disabled=!org;$('rnd').disabled=!ok;$('edit').disabled=!org;if(!org)$('editor').classList.add('hide');drawBracket(org);
+  }
+  function mkBracket(){
+    var n=S.teams.length,size=1;while(size<n)size*=2;
+    var t=shuffle(S.teams.map(function(_,i){return i})),byes=size-n,m0=[],i;
+    for(i=0;i<byes;i++)m0.push({a:t[i],b:null,w:t[i]});
+    for(i=byes;i<n;i+=2)m0.push({a:t[i],b:t[i+1],w:null});
+    m0=shuffle(m0);
+    var rounds=[m0],c=size/4;
+    while(c>=1){var r=[];for(i=0;i<c;i++)r.push({w:null});rounds.push(r);c/=2}
+    return rounds;
+  }
+  function slot(r,m,s){var R=S.bracket;return r===0?(s?R[0][m].b:R[0][m].a):R[r-1][2*m+s].w}
+  function rname(r,total){var d=total-1-r;return d===0?'Финал':d===1?'Полуфинал':d===2?'1/4 финала':'Раунд '+(r+1)}
+  function tm(r,i,x,y,m,org){
+    if(x==null)return '<div class="tm empty">'+(r===0?'— пропуск':'ожидается')+'</div>';
+    var pl=S.picks.filter(function(q){return q.t===x}).map(function(q){return q.p}).join(', ');
+    var cls='tm'+(m.w===x?' win':(m.w!=null?' lose':''));
+    if(y==null)return '<div class="'+cls+'" title="'+esc(pl)+'">'+esc(S.teams[x])+'</div>';
+    return '<button class="'+cls+'" title="'+esc(pl)+'" data-r="'+r+'" data-i="'+i+'" data-t="'+x+'"'+(org?'':' disabled')+'>'+esc(S.teams[x])+'</button>';
+  }
+  function drawBracket(org){
+    var box=$('bracket'),R=S.bracket;
+    box.classList.toggle('hide',!R);if(!R)return;
+    $('rebr').disabled=!org||R.some(function(rd,r){return rd.some(function(m){return m.w!=null&&!(r===0&&m.b==null)})});
+    var h='<div class="br">';
+    R.forEach(function(rd,r){
+      h+='<div class="rd"><div class="rt">'+rname(r,R.length)+'</div>';
+      rd.forEach(function(m,i){var a=slot(r,i,0),b=slot(r,i,1);h+='<div class="mt">'+tm(r,i,a,b,m,org)+tm(r,i,b,a,m,org)+'</div>'});
+      h+='</div>';
+    });
+    h+='</div>';
+    var ch=R[R.length-1][0].w;
+    if(ch!=null)h+='<div class="champ">Победитель: '+esc(S.teams[ch])+'</div>';
+    $('brwrap').innerHTML=h;
+  }
+  var TO=['A','B','C',''];
+  function tierOf(p){var i=S.players.indexOf(p);var t=(S.tiers&&S.tiers[i])||'';return TO.indexOf(t)<0?'':t}
+  function allowed(p){var best=99;left().forEach(function(x){var k=TO.indexOf(tierOf(x));if(k<best)best=k});return TO.indexOf(tierOf(p))===best}
+  function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+  $('start').onclick=function(){
+    var t=lines($('tIn').value),p=lines($('pIn').value);
+    if(t.length<2){$('err').textContent='Нужно минимум две команды.';return}
+    if(p.length<1){$('err').textContent='Добавьте хотя бы одного игрока.';return}
+    $('err').textContent='';
+    var L=['A','B','C'],tiers=[],pos=0;
+    L.forEach(function(l){var c=Math.max(0,parseInt($('t'+l).value,10)||0);for(var j=0;j<c;j++)tiers[pos++]=l});
+    if(pos>p.length){$('err').textContent='В тирах указано '+pos+' игроков, а в списке только '+p.length+'.';return}
+    while(tiers.length<p.length)tiers.push('');
+    S={teams:t,players:p,tiers:tiers,order:shuffle(t.map(function(_,i){return i})),picks:[]};ROLE='org';try{localStorage.setItem(RK,ROLE)}catch(e){}save();render();
+  };
+  $('pool').onclick=function(e){var b=e.target.closest('button');if(b)pick(left()[+b.dataset.i])};
+  $('rnd').onclick=function(){var r=left().filter(function(x){return allowed(x)});if(r.length)pick(r[Math.floor(Math.random()*r.length)])};
+  $('undo').onclick=function(){S.picks.pop();S.bracket=null;save();render()};
+  $('reshuffle').onclick=function(){S.order=shuffle(S.order);save();render()};
+  $('reset').onclick=function(){if(confirm('Сбросить всё и начать заново?')){S=null;try{localStorage.removeItem(KEY)}catch(e){}if(DB){DB.set({json:''}).catch(function(){})}render()}};
+  $('edit').onclick=function(){
+    function inp(a,k){return a.map(function(v,i){return '<input class="ed" data-k="'+k+i+'" value="'+esc(v)+'">'}).join('')}
+    $('etl').innerHTML=inp(S.teams,'t');
+    $('epl').innerHTML=S.players.map(function(v,i){var t=(S.tiers&&S.tiers[i])||'';return '<div class="erow"><input class="ed" value="'+esc(v)+'"><select aria-label="Тир">'+TO.map(function(l){return '<option value="'+l+'"'+(l===t?' selected':'')+'>'+(l||'—')+'</option>'}).join('')+'</select></div>'}).join('');
+    $('eerr').textContent='';$('editor').classList.remove('hide');
+  };
+  $('ecancel').onclick=function(){$('editor').classList.add('hide')};
+  $('esave').onclick=function(){
+    function vals(id){return [].slice.call($(id).querySelectorAll('input')).map(function(x){return x.value.trim()})}
+    function dup(a){return a.some(function(x,i){return a.indexOf(x)!==i})}
+    var ti=vals('etl'),pi=vals('epl'),tr=[].slice.call($('epl').querySelectorAll('select')).map(function(x){return x.value});
+    if(ti.concat(pi).some(function(x){return !x})){$('eerr').textContent='Имена не могут быть пустыми.';return}
+    if(dup(ti)||dup(pi)){$('eerr').textContent='Имена в одном списке не должны повторяться.';return}
+    var map=Object.create(null);S.players.forEach(function(o,i){map[o]=pi[i]});
+    S.picks.forEach(function(q){q.p=map[q.p]});
+    S.teams=ti;S.players=pi;S.tiers=tr;save();$('editor').classList.add('hide');render();
+  };
+  $('brwrap').onclick=function(e){
+    var b=e.target.closest('button[data-t]');if(!b||ROLE!=='org')return;
+    var r=+b.dataset.r,i=+b.dataset.i,x=+b.dataset.t,R=S.bracket;
+    if(R[r][i].w===x)return;
+    R[r][i].w=x;
+    for(var rr=r+1;rr<R.length;rr++)R[rr][i>>(rr-r)].w=null;
+    save();render();
+  };
+  $('rebr').onclick=function(){if(ROLE==='org'){S.bracket=mkBracket();save();render()}};
+  $('role').onchange=function(){ROLE=this.value;try{localStorage.setItem(RK,ROLE)}catch(e){}render()};
+  var SNAP=false;
+  function enc(o){return btoa(unescape(encodeURIComponent(JSON.stringify(o)))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'')}
+  function dec(h){h=h.replace(/-/g,'+').replace(/_/g,'/');while(h.length%4)h+='=';return JSON.parse(decodeURIComponent(escape(atob(h))))}
+  $('share').onclick=function(){
+    var u='https://claude.ai/artifact/SA7N5pm8HLvRvouDLCFuvR#'+enc(S);
+    function ask(){try{prompt('Скопируйте ссылку:',u)}catch(e){}}
+    if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(u).then(function(){$('sync').textContent='ссылка скопирована'},ask)}else ask();
+  };
+  S=load();
+  try{if(location.hash.length>20){S=dec(location.hash.slice(1));SNAP=true;ROLE='view'}}catch(e){}
+  render();
+  if(SNAP){$('sync').textContent='снимок драфта, только просмотр';$('role').disabled=true}
+  if(!SNAP&&window.claude&&window.claude.use){
+    window.claude.use('db').then(function(db){
+      if(!db)return;
+      DB=db.doc('draft/main');
+      $('sync').textContent='онлайн: все видят выбор сразу';
+      DB.onSnapshot(function(s){
+        var j=s.exists?s.data().json:'';
+        S=j?JSON.parse(j):null;
+        render();
+      },function(){$('sync').textContent='нет связи'});
+    }).catch(function(){});
+  }
+})();
+</script>
+</body>
+</html>
